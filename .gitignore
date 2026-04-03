@@ -4,3 +4,4 @@ sites.json
 properties.json
 contacts.json
 data/
+.env

@@ -3,7 +3,7 @@ const readline = require("readline");
 
 const API_BASE = "https://wls-api.waterlinkconnect.com";
 const AUTH_URL = "https://wls-auth.waterlinkconnect.com/authentication";
-const LIMIT = 25;
+const LIMIT = 15000;
 const DB_PATH = "watermeter.db";
 let username = null;
 let password = null;
@@ -131,10 +131,20 @@ async function scrapeResource(db, name, endpoint) {
   }
 
   const insert = db.prepare(
-    "INSERT OR IGNORE INTO records (id, resource, data) VALUES (?, ?, ?)"
+    "INSERT INTO records (id, resource, data) VALUES (?, ?, ?)"
   );
   const insertBatch = db.transaction((rows) => {
-    for (const row of rows) insert.run(row.id, name, JSON.stringify(row));
+    for (const row of rows) {
+      try {
+        insert.run(row.id, name, JSON.stringify(row));
+      } catch (err) {
+        if (err.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
+          console.warn(`  DUPLICATE at offset ~${offset}: id=${row.id}`);
+        } else {
+          throw err;
+        }
+      }
+    }
   });
 
   insertBatch(probe.data);

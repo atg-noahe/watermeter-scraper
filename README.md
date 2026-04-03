@@ -44,3 +44,17 @@ Each file exports an array:
 const sites = require("./data/sites");
 console.log(sites.length); // 14120
 ```
+
+### Import to MySQL
+
+```
+node import.js
+```
+
+Reads the extracted JS files and upserts them into the MySQL database. You'll be prompted for connection details, or set environment variables:
+
+```
+MYSQL_HOST=your-host MYSQL_PORT=25060 MYSQL_USER=your-user MYSQL_PASSWORD=your-pass MYSQL_DATABASE=olympia-watertest node import.js
+```
+
+Existing records are updated on conflict (matched by UUID primary key). Records are imported in order: contacts, properties, then sites.
